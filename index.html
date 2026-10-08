@@ -1,0 +1,1698 @@
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ギター指板 音名当てクイズ</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #111;
+    color: #eee;
+    font-family: Arial, "Noto Sans JP", sans-serif;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 30px 20px 50px;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 8px;
+}
+
+.description {
+    color: #aaa;
+    margin-bottom: 25px;
+}
+
+
+/* =========================
+   設定
+========================= */
+
+.settings {
+    max-width: 800px;
+    margin: 0 auto 25px;
+
+    padding: 20px;
+
+    background: #1d1d1d;
+
+    border-radius: 10px;
+
+    border: 1px solid #333;
+}
+
+.settings-title {
+    font-size: 18px;
+    font-weight: bold;
+
+    margin-bottom: 15px;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin: 10px 0;
+
+    flex-wrap: wrap;
+}
+
+.setting-row label {
+    color: #ccc;
+}
+
+select,
+input {
+    padding: 8px 10px;
+
+    background: #292929;
+
+    color: white;
+
+    border: 1px solid #555;
+
+    border-radius: 5px;
+
+    font-size: 15px;
+}
+
+input[type="number"] {
+    width: 75px;
+}
+
+
+/* =========================
+   スコア
+========================= */
+
+.status {
+    display: flex;
+    justify-content: center;
+
+    gap: 40px;
+
+    margin-bottom: 20px;
+
+    font-size: 17px;
+}
+
+.status span {
+    font-weight: bold;
+}
+
+
+/* =========================
+   問題
+========================= */
+
+.question {
+    font-size: 23px;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+}
+
+.result {
+    height: 35px;
+
+    font-size: 18px;
+
+    font-weight: bold;
+}
+
+.correct {
+    color: #4ade80;
+}
+
+.wrong {
+    color: #f87171;
+}
+
+
+/* =========================
+   指板
+========================= */
+
+.fretboard-container {
+    overflow-x: auto;
+
+    padding: 45px 0 70px;
+}
+
+.fretboard {
+
+    position: relative;
+
+    width: 1100px;
+    height: 330px;
+
+    margin: auto;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #8a562c,
+            #a66b36,
+            #8a562c
+        );
+
+    border: 5px solid #222;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.5);
+}
+
+
+/* =========================
+   ナット
+========================= */
+
+.nut {
+    position: absolute;
+
+    left: 70px;
+    top: 0;
+
+    width: 12px;
+    height: 100%;
+
+    background: #eee;
+
+    z-index: 4;
+}
+
+
+/* =========================
+   フレット
+========================= */
+
+.fret {
+    position: absolute;
+
+    top: 0;
+    bottom: 0;
+
+    width: 3px;
+
+    background: #ccc;
+
+    z-index: 2;
+}
+
+
+/* =========================
+   弦
+========================= */
+
+.string {
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    background: #ddd;
+
+    z-index: 5;
+
+    transform: translateY(-50%);
+
+    box-shadow:
+        0 1px 2px rgba(0,0,0,0.6);
+}
+
+
+/* =========================
+   弦番号
+========================= */
+
+.string-number {
+
+    position: absolute;
+
+    left: -35px;
+
+    transform: translateY(-50%);
+
+    color: #aaa;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    z-index: 10;
+}
+
+
+/* =========================
+   フレット番号
+========================= */
+
+.fret-number {
+
+    position: absolute;
+
+    bottom: -38px;
+
+    transform: translateX(-50%);
+
+    color: #aaa;
+
+    font-size: 14px;
+
+    z-index: 10;
+}
+
+
+/* =========================
+   ポジションマーク
+========================= */
+
+.position-marker {
+
+    position: absolute;
+
+    width: 10px;
+    height: 10px;
+
+    background: rgba(255,255,255,0.65);
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 1;
+}
+
+
+/* =========================
+   問題の赤丸
+========================= */
+
+.target-note {
+
+    position: absolute;
+
+    width: 44px;
+    height: 44px;
+
+    transform:
+        translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background: #e53935;
+
+    border: 4px solid white;
+
+    box-shadow:
+        0 0 18px rgba(255,40,40,0.8);
+
+    z-index: 20;
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   回答ボタン
+========================= */
+
+.answers {
+
+    max-width: 700px;
+
+    margin: 0 auto 20px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(6, 1fr);
+
+    gap: 10px;
+}
+
+.answer-button {
+
+    padding: 14px 5px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background: #333;
+
+    color: white;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s,
+        transform 0.1s;
+}
+
+.answer-button:hover {
+
+    background: #555;
+
+    transform:
+        translateY(-2px);
+}
+
+.answer-button:disabled {
+
+    cursor: default;
+
+    opacity: 0.6;
+}
+
+
+/* =========================
+   ボタン
+========================= */
+
+.button-area {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+}
+
+.next-button,
+.play-button,
+.start-button {
+
+    padding: 12px 28px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+.next-button {
+    background: #c62828;
+}
+
+.next-button:hover {
+    background: #e53935;
+}
+
+.play-button {
+    background: #444;
+}
+
+.play-button:hover {
+    background: #555;
+}
+
+.start-button {
+    background: #1976d2;
+}
+
+.start-button:hover {
+    background: #2196f3;
+}
+
+
+/* =========================
+   音声状態
+========================= */
+
+.audio-status {
+    margin-top: 12px;
+
+    color: #888;
+
+    font-size: 13px;
+}
+
+
+/* =========================
+   スマホ
+========================= */
+
+@media (max-width: 700px) {
+
+    .answers {
+        grid-template-columns:
+            repeat(4, 1fr);
+    }
+
+    .status {
+        gap: 20px;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>
+        ギター指板 音名当てクイズ
+    </h1>
+
+    <div class="description">
+        赤い丸の位置の音名を答えてください
+    </div>
+
+
+    <!-- =====================
+         設定
+    ====================== -->
+
+    <div class="settings">
+
+        <div class="settings-title">
+            問題設定
+        </div>
+
+
+        <div class="setting-row">
+
+            <label for="stringSelect">
+                問題を出す弦：
+            </label>
+
+            <select id="stringSelect">
+
+                <option value="all">
+                    全弦
+                </option>
+
+                <option value="1">
+                    1弦
+                </option>
+
+                <option value="2">
+                    2弦
+                </option>
+
+                <option value="3">
+                    3弦
+                </option>
+
+                <option value="4">
+                    4弦
+                </option>
+
+                <option value="5">
+                    5弦
+                </option>
+
+                <option value="6">
+                    6弦
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="setting-row">
+
+            <label>
+                フレット範囲：
+            </label>
+
+            <input
+                type="number"
+                id="minFret"
+                min="0"
+                max="24"
+                value="0">
+
+            <span>〜</span>
+
+            <input
+                type="number"
+                id="maxFret"
+                min="0"
+                max="24"
+                value="24">
+
+            <span>フレット</span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================
+         スコア
+    ====================== -->
+
+    <div class="status">
+
+        <div>
+            正解：
+            <span id="score">0</span>
+        </div>
+
+        <div>
+            問題：
+            <span id="questionCount">0</span>
+        </div>
+
+        <div>
+            連続：
+            <span id="streak">0</span>
+        </div>
+
+    </div>
+
+
+    <div class="question">
+        この音は何？
+    </div>
+
+
+    <div
+        id="result"
+        class="result">
+    </div>
+
+
+    <!-- =====================
+         指板
+    ====================== -->
+
+    <div class="fretboard-container">
+
+        <div
+            id="fretboard"
+            class="fretboard">
+        </div>
+
+    </div>
+
+
+    <!-- =====================
+         回答
+    ====================== -->
+
+    <div
+        id="answers"
+        class="answers">
+    </div>
+
+
+    <!-- =====================
+         ボタン
+    ====================== -->
+
+    <div class="button-area">
+
+        <button
+            id="playButton"
+            class="play-button">
+
+            🔊 もう一度鳴らす
+
+        </button>
+
+
+        <button
+            id="nextButton"
+            class="next-button">
+
+            次の問題
+
+        </button>
+
+    </div>
+
+
+    <div
+        id="audioStatus"
+        class="audio-status">
+
+        音声機能を使用するには
+        「次の問題」を一度クリックしてください。
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+/* ==================================================
+   音名
+================================================== */
+
+const NOTES = [
+
+    "C",
+    "C♯",
+    "D",
+    "D♯",
+    "E",
+    "F",
+    "F♯",
+    "G",
+    "G♯",
+    "A",
+    "A♯",
+    "B"
+
+];
+
+
+/* ==================================================
+   レギュラーチューニング
+
+   TAB譜と同じ順番
+
+   1弦 E4
+   2弦 B3
+   3弦 G3
+   4弦 D3
+   5弦 A2
+   6弦 E2
+================================================== */
+
+const OPEN_STRINGS = [
+
+    64,
+    59,
+    55,
+    50,
+    45,
+    40
+
+];
+
+
+const STRING_COUNT = 6;
+
+const FRET_COUNT = 24;
+
+
+/* ==================================================
+   ゲーム状態
+================================================== */
+
+let targetString = 0;
+
+let targetFret = 0;
+
+let targetNote = 0;
+
+let targetMidi = 0;
+
+let score = 0;
+
+let questionCount = 0;
+
+let streak = 0;
+
+let answered = false;
+
+
+/* ==================================================
+   音声
+================================================== */
+
+let audioContext = null;
+
+
+/*
+   Web Audio APIを開始
+*/
+
+function startAudio() {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+    }
+
+
+    if (
+        audioContext.state ===
+        "suspended"
+    ) {
+
+        audioContext.resume();
+
+    }
+
+}
+
+
+/* ==================================================
+   MIDI → 周波数
+================================================== */
+
+function midiToFrequency(midi) {
+
+    return 440 *
+        Math.pow(
+            2,
+            (midi - 69) / 12
+        );
+
+}
+
+
+/* ==================================================
+   ギターっぽい音を鳴らす
+================================================== */
+
+function playNote(midi) {
+
+    startAudio();
+
+
+    const frequency =
+        midiToFrequency(midi);
+
+
+    const now =
+        audioContext.currentTime;
+
+
+    /*
+       マスターゲイン
+    */
+
+    const master =
+        audioContext.createGain();
+
+
+    master.gain.setValueAtTime(
+        0.0001,
+        now
+    );
+
+
+    /*
+       弦を弾いた瞬間
+    */
+
+    master.gain.exponentialRampToValueAtTime(
+        0.35,
+        now + 0.015
+    );
+
+
+    /*
+       徐々に減衰
+    */
+
+    master.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + 1.8
+    );
+
+
+    master.connect(
+        audioContext.destination
+    );
+
+
+    /*
+       倍音を作る
+    */
+
+    const harmonics = [
+
+        {
+            multiple: 1,
+            volume: 1.0
+        },
+
+        {
+            multiple: 2,
+            volume: 0.32
+        },
+
+        {
+            multiple: 3,
+            volume: 0.16
+        },
+
+        {
+            multiple: 4,
+            volume: 0.08
+        },
+
+        {
+            multiple: 5,
+            volume: 0.04
+        }
+
+    ];
+
+
+    harmonics.forEach(
+        harmonic => {
+
+            const oscillator =
+                audioContext.createOscillator();
+
+
+            const gain =
+                audioContext.createGain();
+
+
+            oscillator.type =
+                "triangle";
+
+
+            oscillator.frequency.value =
+                frequency *
+                harmonic.multiple;
+
+
+            gain.gain.value =
+                harmonic.volume;
+
+
+            oscillator.connect(gain);
+
+            gain.connect(master);
+
+
+            oscillator.start(now);
+
+
+            oscillator.stop(
+                now + 1.8
+            );
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   指板作成
+================================================== */
+
+function createFretboard() {
+
+    fretboard.innerHTML = "";
+
+
+    const width = 1100;
+
+    const height = 330;
+
+    const nutWidth = 70;
+
+    const fretAreaWidth =
+        width - nutWidth;
+
+    const fretWidth =
+        fretAreaWidth / FRET_COUNT;
+
+    const stringSpacing =
+        height /
+        (STRING_COUNT + 1);
+
+
+    /* ナット */
+
+    const nut =
+        document.createElement("div");
+
+    nut.className = "nut";
+
+    fretboard.appendChild(nut);
+
+
+    /* 0フレット */
+
+    const zero =
+        document.createElement("div");
+
+    zero.className =
+        "fret-number";
+
+    zero.textContent = "0";
+
+    zero.style.left =
+        (nutWidth / 2) + "px";
+
+    fretboard.appendChild(zero);
+
+
+    /* フレット */
+
+    for (
+        let fret = 1;
+        fret <= FRET_COUNT;
+        fret++
+    ) {
+
+        const line =
+            document.createElement("div");
+
+        line.className =
+            "fret";
+
+
+        const x =
+            nutWidth +
+            fret * fretWidth;
+
+
+        line.style.left =
+            x + "px";
+
+
+        fretboard.appendChild(line);
+
+
+        const number =
+            document.createElement("div");
+
+        number.className =
+            "fret-number";
+
+        number.textContent =
+            fret;
+
+
+        const centerX =
+            nutWidth +
+            (fret - 0.5) *
+            fretWidth;
+
+
+        number.style.left =
+            centerX + "px";
+
+
+        fretboard.appendChild(number);
+
+    }
+
+
+    /* 弦 */
+
+    for (
+        let string = 0;
+        string < STRING_COUNT;
+        string++
+    ) {
+
+        const y =
+            (string + 1) *
+            stringSpacing;
+
+
+        const stringNumber =
+            document.createElement(
+                "div"
+            );
+
+        stringNumber.className =
+            "string-number";
+
+        stringNumber.textContent =
+            string + 1;
+
+        stringNumber.style.top =
+            y + "px";
+
+
+        fretboard.appendChild(
+            stringNumber
+        );
+
+
+        const stringElement =
+            document.createElement(
+                "div"
+            );
+
+        stringElement.className =
+            "string";
+
+        stringElement.style.top =
+            y + "px";
+
+
+        const thickness =
+            1.5 +
+            string * 0.7;
+
+
+        stringElement.style.height =
+            thickness + "px";
+
+
+        fretboard.appendChild(
+            stringElement
+        );
+
+    }
+
+
+    /* ポジションマーク */
+
+    const markerFrets = [
+        3,
+        5,
+        7,
+        9,
+        15,
+        17,
+        19,
+        21
+    ];
+
+
+    markerFrets.forEach(
+        fret => {
+
+            const marker =
+                document.createElement(
+                    "div"
+                );
+
+            marker.className =
+                "position-marker";
+
+
+            const x =
+                nutWidth +
+                (fret - 0.5) *
+                fretWidth;
+
+
+            marker.style.left =
+                x + "px";
+
+            marker.style.top =
+                (height / 2) + "px";
+
+
+            fretboard.appendChild(
+                marker
+            );
+
+        }
+    );
+
+
+    /* 12・24フレット */
+
+    [12, 24].forEach(
+        fret => {
+
+            const x =
+                nutWidth +
+                (fret - 0.5) *
+                fretWidth;
+
+
+            const marker1 =
+                document.createElement(
+                    "div"
+                );
+
+            marker1.className =
+                "position-marker";
+
+            marker1.style.left =
+                x + "px";
+
+            marker1.style.top =
+                (height * 0.35) + "px";
+
+
+            fretboard.appendChild(
+                marker1
+            );
+
+
+            const marker2 =
+                document.createElement(
+                    "div"
+                );
+
+            marker2.className =
+                "position-marker";
+
+            marker2.style.left =
+                x + "px";
+
+            marker2.style.top =
+                (height * 0.65) + "px";
+
+
+            fretboard.appendChild(
+                marker2
+            );
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   問題作成
+================================================== */
+
+function createQuestion() {
+
+    startAudio();
+
+    answered = false;
+
+    result.textContent = "";
+
+    result.className =
+        "result";
+
+
+    /* 弦の設定 */
+
+    const stringSetting =
+        document.getElementById(
+            "stringSelect"
+        ).value;
+
+
+    if (stringSetting === "all") {
+
+        targetString =
+            Math.floor(
+                Math.random() *
+                STRING_COUNT
+            );
+
+    }
+
+    else {
+
+        targetString =
+            Number(stringSetting) - 1;
+
+    }
+
+
+    /* フレット範囲 */
+
+    let minFret =
+        Number(
+            document.getElementById(
+                "minFret"
+            ).value
+        );
+
+
+    let maxFret =
+        Number(
+            document.getElementById(
+                "maxFret"
+            ).value
+        );
+
+
+    /*
+       入力値を安全な範囲にする
+    */
+
+    minFret =
+        Math.max(
+            0,
+            Math.min(
+                FRET_COUNT,
+                minFret
+            )
+        );
+
+
+    maxFret =
+        Math.max(
+            0,
+            Math.min(
+                FRET_COUNT,
+                maxFret
+            )
+        );
+
+
+    /*
+       逆になっていた場合は入れ替える
+    */
+
+    if (minFret > maxFret) {
+
+        const temp = minFret;
+
+        minFret = maxFret;
+
+        maxFret = temp;
+
+    }
+
+
+    /*
+       ランダムフレット
+    */
+
+    targetFret =
+        Math.floor(
+            Math.random() *
+            (maxFret - minFret + 1)
+        ) + minFret;
+
+
+    /*
+       MIDI番号
+    */
+
+    targetMidi =
+        OPEN_STRINGS[targetString]
+        + targetFret;
+
+
+    /*
+       音名
+    */
+
+    targetNote =
+        targetMidi % 12;
+
+
+    questionCount++;
+
+    updateStatus();
+
+    enableAnswerButtons();
+
+    showTarget();
+
+
+    /*
+       問題が表示されたら
+       自動で音を鳴らす
+    */
+
+    setTimeout(
+        () => {
+
+            playNote(
+                targetMidi
+            );
+
+        },
+        100
+    );
+
+
+    document.getElementById(
+        "audioStatus"
+    ).textContent =
+        "音を再生しました";
+
+}
+
+
+/* ==================================================
+   赤丸表示
+================================================== */
+
+function showTarget() {
+
+    const oldTarget =
+        document.querySelector(
+            ".target-note"
+        );
+
+    if (oldTarget) {
+
+        oldTarget.remove();
+
+    }
+
+
+    const width = 1100;
+
+    const height = 330;
+
+    const nutWidth = 70;
+
+    const fretAreaWidth =
+        width - nutWidth;
+
+    const fretWidth =
+        fretAreaWidth / FRET_COUNT;
+
+    const stringSpacing =
+        height /
+        (STRING_COUNT + 1);
+
+
+    const y =
+        (targetString + 1) *
+        stringSpacing;
+
+
+    let x;
+
+
+    /*
+       0フレットは
+       ナットの左側
+    */
+
+    if (targetFret === 0) {
+
+        x =
+            nutWidth / 2;
+
+    }
+
+    else {
+
+        x =
+            nutWidth +
+            (targetFret - 0.5) *
+            fretWidth;
+
+    }
+
+
+    const target =
+        document.createElement(
+            "div"
+        );
+
+    target.className =
+        "target-note";
+
+
+    target.style.left =
+        x + "px";
+
+    target.style.top =
+        y + "px";
+
+
+    fretboard.appendChild(
+        target
+    );
+
+}
+
+
+/* ==================================================
+   回答ボタン
+================================================== */
+
+function createAnswerButtons() {
+
+    answers.innerHTML = "";
+
+
+    NOTES.forEach(
+        (note, index) => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.className =
+                "answer-button";
+
+            button.textContent =
+                note;
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    checkAnswer(index);
+
+                }
+            );
+
+
+            answers.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   回答ボタン有効化
+================================================== */
+
+function enableAnswerButtons() {
+
+    document
+        .querySelectorAll(
+            ".answer-button"
+        )
+        .forEach(
+            button => {
+
+                button.disabled =
+                    false;
+
+            }
+        );
+
+}
+
+
+/* ==================================================
+   回答判定
+================================================== */
+
+function checkAnswer(answer) {
+
+    if (answered) {
+
+        return;
+
+    }
+
+
+    answered = true;
+
+
+    document
+        .querySelectorAll(
+            ".answer-button"
+        )
+        .forEach(
+            button => {
+
+                button.disabled =
+                    true;
+
+            }
+        );
+
+
+    if (answer === targetNote) {
+
+        score++;
+
+        streak++;
+
+
+        result.textContent =
+            "正解！ " +
+            NOTES[targetNote] +
+            " / " +
+            getStringName() +
+            " " +
+            targetFret +
+            "F";
+
+
+        result.className =
+            "result correct";
+
+
+        /*
+           正解音を再生
+        */
+
+        playNote(
+            targetMidi
+        );
+
+    }
+
+    else {
+
+        streak = 0;
+
+
+        result.textContent =
+            "不正解。正解は " +
+            NOTES[targetNote] +
+            " / " +
+            getStringName() +
+            " " +
+            targetFret +
+            "F";
+
+
+        result.className =
+            "result wrong";
+
+
+        /*
+           正解音を再生
+        */
+
+        playNote(
+            targetMidi
+        );
+
+    }
+
+
+    updateStatus();
+
+}
+
+
+/* ==================================================
+   弦名
+================================================== */
+
+function getStringName() {
+
+    return (
+        (targetString + 1) +
+        "弦"
+    );
+
+}
+
+
+/* ==================================================
+   もう一度鳴らす
+================================================== */
+
+document
+    .getElementById("playButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            playNote(
+                targetMidi
+            );
+
+
+            document.getElementById(
+                "audioStatus"
+            ).textContent =
+                "音を再生しました";
+
+        }
+    );
+
+
+/* ==================================================
+   次の問題
+================================================== */
+
+document
+    .getElementById("nextButton")
+    .addEventListener(
+        "click",
+        createQuestion
+    );
+
+
+/* ==================================================
+   スコア
+================================================== */
+
+function updateStatus() {
+
+    document.getElementById(
+        "score"
+    ).textContent =
+        score;
+
+
+    document.getElementById(
+        "questionCount"
+    ).textContent =
+        questionCount;
+
+
+    document.getElementById(
+        "streak"
+    ).textContent =
+        streak;
+
+}
+
+
+/* ==================================================
+   初期化
+================================================== */
+
+createFretboard();
+
+createAnswerButtons();
+
+</script>
+
+</body>
+</html>
+```
