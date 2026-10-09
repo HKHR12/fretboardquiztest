@@ -4,343 +4,311 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ギター指板トレーナー</title>
+<title>ギター指板トレーニング</title>
 <style>
+:root {
+  --bg: #111318;
+  --panel: #1c2029;
+  --line: #414957;
+  --text: #f2f4f8;
+  --muted: #aab2c0;
+  --accent: #66d9c1;
+  --red: #ff596b;
+  --yellow: #ffd166;
+}
 * { box-sizing: border-box; }
-
 body {
   margin: 0;
   padding: 16px;
-  background: #17191e;
-  color: #f1f1f1;
-  font-family: system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-family: system-ui, -apple-system, sans-serif;
 }
-
-main { max-width: 1200px; margin: auto; }
-h1 { font-size: 24px; }
-
+main { max-width: 1100px; margin: auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+p { line-height: 1.6; }
+.sub { color: var(--muted); margin-top: 0; }
+.panel {
+  background: var(--panel);
+  border: 1px solid #303744;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0;
+}
+.modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
 button, select, input {
   font: inherit;
-  padding: 9px 11px;
+}
+button, select {
+  color: var(--text);
+  background: #292f3b;
+  border: 1px solid #485264;
   border-radius: 8px;
-  border: 1px solid #555;
+  padding: 10px 12px;
 }
-
-button {
-  cursor: pointer;
-  background: #343944;
-  color: white;
-}
-
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
 button.active {
-  background: #a72e3a;
-  border-color: #e45b5b;
+  background: #174d48;
+  border-color: var(--accent);
 }
-
-button:disabled { cursor: default; }
-
-.modes {
+button:disabled { opacity: .65; cursor: default; }
+.controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0;
-}
-
-.settings {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
   gap: 12px;
-  padding: 14px;
-  margin: 14px 0;
-  background: #22252c;
-  border-radius: 12px;
+  align-items: center;
 }
-
-.field {
+.control {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  gap: 7px;
+  align-items: center;
 }
-
-label { font-size: 13px; color: #c3c6ce; }
-input, select { background: #121419; color: white; }
-
+label { color: var(--muted); }
+input[type="number"] {
+  width: 76px;
+  color: var(--text);
+  background: #11151c;
+  border: 1px solid #485264;
+  border-radius: 7px;
+  padding: 8px;
+}
+select { max-width: 100%; }
 #question {
-  font-size: 20px;
+  font-size: 1.15rem;
   font-weight: 700;
-  margin: 20px 0 8px;
+  margin: 8px 0;
 }
-
-#instructions {
-  color: #c3c6ce;
-  line-height: 1.6;
+#message { min-height: 1.6em; color: var(--muted); }
+.answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
 }
+.answer-btn { min-width: 50px; }
+.answer-btn.correct, .cell.correct {
+  background-color: #17664d !important;
+  border-color: #6af0b4 !important;
+}
+.answer-btn.wrong, .cell.wrong {
+  background-color: #792e3a !important;
+  border-color: #ff7787 !important;
+}
+.hidden { display: none !important; }
 
-#boardWrap {
+/* 番号と指板を同じスクロール領域に収める */
+.fret-scroll {
+  width: 100%;
   overflow-x: auto;
-  margin: 18px 0;
-  padding-bottom: 8px;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
 }
-
-#fretHeader, #board {
+.fret-layout {
+  width: max-content;
+  min-width: 100%;
+}
+.fret-header, .fretboard {
   display: grid;
+  grid-template-columns: 44px repeat(var(--frets), 44px);
   width: max-content;
 }
-
-#fretHeader {
-  color: #d2d5dd;
-  font-size: 12px;
-  text-align: center;
+.fret-header {
+  position: relative;
   margin-bottom: 4px;
 }
-
-#fretHeader span {
-  padding: 4px 0;
+.fret-number {
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--muted);
+  font-size: .85rem;
 }
-
-#board {
-  grid-template-rows: repeat(6, 54px);
-  background: #c49a67;
-  border: 3px solid #795535;
-  border-radius: 5px;
-  position: relative;
+.fret-number.nut-number {
+  border-left: 4px solid #d4d8df;
 }
-
-.stringLabel {
+.string-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  background: #252932;
-  font-size: 12px;
-  border-bottom: 1px solid #555;
+  width: 44px;
+  min-height: 43px;
+  color: var(--accent);
+  font-size: .88rem;
+  font-weight: 700;
+  background: #202631;
+  border-right: 1px solid #343c49;
 }
-
 .cell {
+  width: 44px;
+  height: 43px;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid #68707b;
+  border-right: 1px solid #3e4653;
+  background: #272d37;
+  color: var(--text);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  min-width: 0;
-  min-height: 0;
-  border-radius: 0;
-  border-right: 1px solid #795c3c;
-  border-bottom: 1px solid #795c3c;
-  background: transparent;
-  color: #171717;
-  overflow: visible;
+  font-weight: 700;
+  overflow: hidden;
 }
-
-/* 開放弦とナット */
-.cell.open {
-  border-right: 5px solid #e4d4b6;
+.cell:nth-child(even) { background-color: #242a33; }
+.cell.nut { border-left: 4px solid #d4d8df; }
+.cell.inlay::before {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #77808d;
+  opacity: .65;
+  z-index: 0;
 }
-
-/* 指板のインレイ */
-.cell.inlay::before,
-.cell.double-inlay::before,
+.cell.double-inlay::before {
+  width: 7px;
+  height: 7px;
+  top: 8px;
+}
 .cell.double-inlay::after {
   content: "";
   position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #f0dfc3;
-  border: 1px solid #a78b66;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 0;
+  background: #77808d;
+  opacity: .65;
+  bottom: 8px;
 }
-
-.cell.double-inlay::before {
-  top: 27%;
-}
-
-.cell.double-inlay::after {
-  top: 73%;
-}
-
-/* 弦のライン */
-.cell .string-line {
-  position: absolute;
-  z-index: 1;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 1px;
-  background: rgba(75, 58, 38, .8);
-  pointer-events: none;
-}
-
-/* 音名 */
 .cell .note {
-  display: none;
   position: relative;
-  z-index: 3;
-  align-items: center;
-  justify-content: center;
-  width: 31px;
-  height: 31px;
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 700;
-  background: #e8d7b9;
-  color: #24201b;
+  z-index: 1;
+  pointer-events: none;
+  font-size: .78rem;
 }
-
-/* 出題位置の赤いマーカー */
+.cell.scale-tone {
+  background: #174b46 !important;
+  color: #e5fff8;
+}
+.cell.root-tone {
+  background: #7b5a18 !important;
+  color: #fff5d4;
+}
 .cell.target {
-  background: rgba(190, 37, 47, .20);
+  background: #522b39 !important;
+  outline: 2px solid var(--red);
+  outline-offset: -3px;
+  z-index: 2;
 }
-
-.cell.target .note {
-  display: flex;
-  width: 35px;
-  height: 35px;
-  background: #e53945;
-  color: white;
-  border: 3px solid white;
-  box-shadow: 0 0 0 3px #a71824, 0 0 14px rgba(255, 45, 60, .9);
-  animation: pulse 1.3s infinite;
+.cell.target::after {
+  content: "";
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: var(--red);
+  z-index: 2;
+  box-shadow: 0 0 9px #ff596b;
 }
-
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #a71824, 0 0 10px rgba(255,45,60,.6); }
-  50% { box-shadow: 0 0 0 5px #a71824, 0 0 17px rgba(255,45,60,1); }
-}
-
-/* 選択式の回答 */
+.cell.target .note { color: white; }
 .cell.selected {
-  background: #397cbd;
+  outline: 2px solid var(--yellow);
+  outline-offset: -3px;
+  background: #54461d !important;
 }
-
-.cell.selected .note {
-  display: flex;
-  background: #15548e;
-  color: white;
-}
-
-/* 正解表示 */
-.cell.correct {
-  background: #398c60;
-}
-
-.cell.correct .note {
-  display: flex;
-  background: #246e48;
-  color: white;
-}
-
-/* 誤答表示 */
-.cell.wrong {
-  background: #b83232;
-}
-
-.cell.wrong .note {
-  display: flex;
-  background: #8d2020;
-  color: white;
-}
-
-.actions {
-  display: flex;
-  gap: 9px;
-  flex-wrap: wrap;
-  margin: 14px 0;
-}
-
-#choices {
+.legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0;
+  gap: 12px;
+  color: var(--muted);
+  font-size: .85rem;
+  margin-top: 8px;
 }
-
-#choices button { min-width: 48px; }
-#status { min-height: 28px; margin: 12px 0; font-weight: 700; }
-
-.hint {
-  color: #aeb3bd;
-  font-size: 13px;
-  line-height: 1.6;
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
 }
-
-[hidden] { display: none !important; }
-
-@media (max-width: 600px) {
+.dot.root { background: var(--yellow); }
+.dot.scale { background: var(--accent); }
+.dot.target { background: var(--red); }
+.small { color: var(--muted); font-size: .9rem; }
+@media (max-width: 520px) {
   body { padding: 10px; }
-  h1 { font-size: 21px; }
-  .modes button { flex: 1 1 45%; }
-  .settings { gap: 10px; }
+  .panel { padding: 10px; }
+  .fret-header, .fretboard {
+    grid-template-columns: 38px repeat(var(--frets), 40px);
+  }
+  .string-label { width: 38px; }
+  .cell { width: 40px; height: 40px; }
+  .fret-number { font-size: .8rem; }
+  .modes { grid-template-columns: 1fr; }
 }
 </style>
 </head>
-
 <body>
 <main>
-<h1>ギター指板トレーナー</h1>
+  <h1>ギター指板トレーニング</h1>
+  <p class="sub">6弦ギター・レギュラーチューニング専用</p>
 
-<div class="modes">
-  <button data-mode="position" class="active">① 位置の音名当て</button>
-  <button data-mode="find">② 音名の位置探し</button>
-  <button data-mode="scaleFind">③ スケールの位置探し</button>
-  <button data-mode="scaleNote">④ スケールの音名当て</button>
-</div>
+  <section class="panel">
+    <div class="controls">
+      <div class="control">
+        <label for="maxFret">最大フレット</label>
+        <input id="maxFret" type="number" min="0" max="24" value="12">
+      </div>
+      <button id="newQuestion">次の問題</button>
+      <button id="showAnswer">答えを見る</button>
+    </div>
+    <p class="small">フレット数を変更すると、上の番号と指板が一緒に更新されます。指板は横にスクロールできます。</p>
+  </section>
 
-<div class="settings">
-  <div class="field">
-    <label for="maxFret">最高フレット</label>
-    <input id="maxFret" type="number" min="0" max="24" value="5">
-  </div>
+  <section class="panel">
+    <div class="modes">
+      <button class="mode-btn active" data-mode="position">① 位置の音名当て</button>
+      <button class="mode-btn" data-mode="find">② 音名の位置探し</button>
+      <button class="mode-btn" data-mode="scaleFind">③ スケールの位置探し</button>
+      <button class="mode-btn" data-mode="scaleIdentify">④ スケール判別</button>
+    </div>
+  </section>
 
-  <div class="field" id="noteField">
-    <label for="targetNote">探す音名</label>
-    <select id="targetNote"></select>
-  </div>
+  <section class="panel">
+    <div id="question"></div>
+    <div id="message" aria-live="polite"></div>
+    <div id="extraControls" class="controls"></div>
+    <div id="answers" class="answers"></div>
+  </section>
 
-  <div class="field" id="rootField" hidden>
-    <label for="rootNote">キー（主音）</label>
-    <select id="rootNote"></select>
-  </div>
-
-  <div class="field" id="scaleField" hidden>
-    <label for="scaleType">スケール</label>
-    <select id="scaleType">
-      <option value="major">メジャー</option>
-      <option value="minor">ナチュラルマイナー</option>
-      <option value="harmonicMinor">ハーモニックマイナー</option>
-    </select>
-  </div>
-</div>
-
-<div id="question"></div>
-<div id="instructions"></div>
-
-<div id="fretHeader"></div>
-<div id="boardWrap"><div id="board"></div></div>
-
-<div id="choices"></div>
-
-<div class="actions">
-  <button id="checkBtn">答え合わせ</button>
-  <button id="newBtn">次の問題</button>
-  <button id="showBtn">答えを表示</button>
-</div>
-
-<div id="status" aria-live="polite"></div>
-
-<p class="hint">
-  上から1弦、2弦……6弦の順です。最高フレットを変更すると、指板と番号表示の両方が連動します。赤いマーカーが出題位置、インレイがポジションの目印です。
-</p>
+  <section class="panel">
+    <div class="fret-scroll" id="fretScroll">
+      <div class="fret-layout" id="fretLayout">
+        <div class="fret-header" id="fretHeader"></div>
+        <div class="fretboard" id="fretboard"></div>
+      </div>
+    </div>
+    <div class="legend" id="legend">
+      <span><i class="dot target"></i>問題の位置</span>
+      <span><i class="dot root"></i>ルート音</span>
+      <span><i class="dot scale"></i>スケール構成音</span>
+    </div>
+    <p class="small">上から1弦・2弦・3弦・4弦・5弦・6弦です。0は開放弦です。12フレットでは同じ音名が1オクターブ上になります。</p>
+  </section>
 </main>
 
 <script>
-const NOTES = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
-
+const NOTE_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 const STRINGS = [
   { name: "1弦 E", midi: 64 },
   { name: "2弦 B", midi: 59 },
@@ -349,360 +317,417 @@ const STRINGS = [
   { name: "5弦 A", midi: 45 },
   { name: "6弦 E", midi: 40 }
 ];
-
 const SCALES = {
-  major: { name: "メジャー", intervals: [0,2,4,5,7,9,11] },
-  minor: { name: "ナチュラルマイナー", intervals: [0,2,3,5,7,8,10] },
-  harmonicMinor: { name: "ハーモニックマイナー", intervals: [0,2,3,5,7,8,11] }
+  "メジャー": [0, 2, 4, 5, 7, 9, 11],
+  "ナチュラルマイナー": [0, 2, 3, 5, 7, 8, 10],
+  "ハーモニックマイナー": [0, 2, 3, 5, 7, 8, 11]
 };
 
-const $ = id => document.getElementById(id);
-
-const board = $("board");
-const header = $("fretHeader");
-const status = $("status");
+const maxFretInput = document.getElementById("maxFret");
+const fretHeader = document.getElementById("fretHeader");
+const fretboard = document.getElementById("fretboard");
+const fretLayout = document.getElementById("fretLayout");
+const questionEl = document.getElementById("question");
+const messageEl = document.getElementById("message");
+const answersEl = document.getElementById("answers");
+const extraControls = document.getElementById("extraControls");
+const newQuestionBtn = document.getElementById("newQuestion");
+const showAnswerBtn = document.getElementById("showAnswer");
+const legendEl = document.getElementById("legend");
 
 let mode = "position";
-let selected = new Set();
-let answerSet = new Set();
-let target = null;
+let maxFret = 12;
+let question = {};
 let answered = false;
+let selectedCells = new Set();
+let correctCells = new Set();
+let cellButtons = new Map();
+let rootSelect, scaleSelect;
 
-function fillNotes(select) {
-  NOTES.forEach(note => {
-    const option = document.createElement("option");
-    option.value = note;
-    option.textContent = note;
-    select.appendChild(option);
-  });
+function noteAt(stringIndex, fret) {
+  return NOTE_NAMES[(STRINGS[stringIndex].midi + fret) % 12];
 }
-
-fillNotes($("targetNote"));
-fillNotes($("rootNote"));
-
-$("targetNote").value = "E";
-$("rootNote").value = "C";
-
-function limitFret() {
-  const n = Number.parseInt($("maxFret").value, 10);
-  return Number.isFinite(n) ? Math.max(0, Math.min(24, n)) : 5;
+function noteIndex(note) {
+  return NOTE_NAMES.indexOf(note);
 }
-
-function keyOf(s, f) {
+function randomInt(n) {
+  return Math.floor(Math.random() * n);
+}
+function randomNote() {
+  return NOTE_NAMES[randomInt(NOTE_NAMES.length)];
+}
+function cellKey(s, f) {
   return `${s}-${f}`;
 }
-
-function pitchClass(s, f) {
-  return (STRINGS[s].midi + f) % 12;
-}
-
-function noteAt(s, f) {
-  return NOTES[pitchClass(s, f)];
-}
-
-function allPositions() {
+function allCells() {
   const result = [];
-  for (let s = 0; s < 6; s++) {
-    for (let f = 0; f <= limitFret(); f++) {
-      result.push({ s, f, key: keyOf(s, f) });
+  STRINGS.forEach((str, s) => {
+    for (let f = 0; f <= maxFret; f++) {
+      result.push({ s, f, note: noteAt(s, f) });
     }
-  }
+  });
   return result;
 }
-
-function scalePitchClasses() {
-  const root = NOTES.indexOf($("rootNote").value);
-  return new Set(
-    SCALES[$("scaleType").value].intervals.map(i => (root + i) % 12)
-  );
+function scaleNotes(root, scaleName) {
+  const rootIdx = noteIndex(root);
+  return SCALES[scaleName].map(interval => NOTE_NAMES[(rootIdx + interval) % 12]);
+}
+function currentScaleNotes() {
+  return scaleNotes(question.root, question.scaleName);
 }
 
-function expectedPositions() {
-  const positions = allPositions();
-
-  if (mode === "find") {
-    const pc = NOTES.indexOf($("targetNote").value);
-    return new Set(
-      positions.filter(p => pitchClass(p.s, p.f) === pc).map(p => p.key)
-    );
-  }
-
-  if (mode === "scaleFind") {
-    const pcs = scalePitchClasses();
-    return new Set(
-      positions.filter(p => pcs.has(pitchClass(p.s, p.f))).map(p => p.key)
-    );
-  }
-
-  return new Set();
-}
-
-/* フレット数に合わせて指板と番号を再生成 */
 function buildBoard() {
-  const max = limitFret();
-  const columns = `54px repeat(${max + 1}, 42px)`;
+  maxFret = Math.max(0, Math.min(24, Number(maxFretInput.value) || 0));
+  maxFretInput.value = maxFret;
 
-  board.innerHTML = "";
-  header.innerHTML = "";
+  // ヘッダーと指板を同じ幅・同じ列定義にする
+  const columns = `44px repeat(${maxFret + 1}, 44px)`;
+  fretHeader.style.gridTemplateColumns = columns;
+  fretboard.style.gridTemplateColumns = columns;
+  fretHeader.style.setProperty("--frets", maxFret + 1);
+  fretboard.style.setProperty("--frets", maxFret + 1);
+  fretLayout.style.setProperty("--frets", maxFret + 1);
 
-  board.style.gridTemplateColumns = columns;
-  header.style.gridTemplateColumns = columns;
+  fretHeader.innerHTML = "";
+  fretboard.innerHTML = "";
+  cellButtons.clear();
 
-  const blank = document.createElement("span");
-  header.appendChild(blank);
+  const blank = document.createElement("div");
+  blank.className = "fret-number";
+  blank.textContent = "弦";
+  fretHeader.appendChild(blank);
 
-  for (let f = 0; f <= max; f++) {
-    const span = document.createElement("span");
-    span.textContent = f;
-    header.appendChild(span);
+  for (let f = 0; f <= maxFret; f++) {
+    const label = document.createElement("div");
+    label.className = "fret-number" + (f === 0 ? " nut-number" : "");
+    label.textContent = f;
+    fretHeader.appendChild(label);
   }
 
-  STRINGS.forEach((string, s) => {
-    const label = document.createElement("div");
-    label.className = "stringLabel";
-    label.textContent = string.name;
-    board.appendChild(label);
+  STRINGS.forEach((str, s) => {
+    const stringLabel = document.createElement("div");
+    stringLabel.className = "string-label";
+    stringLabel.textContent = str.name;
+    fretboard.appendChild(stringLabel);
 
-    for (let f = 0; f <= max; f++) {
+    for (let f = 0; f <= maxFret; f++) {
       const cell = document.createElement("button");
       cell.type = "button";
       cell.className = "cell";
-      cell.dataset.key = keyOf(s, f);
-      cell.dataset.s = s;
-      cell.dataset.f = f;
-
-      if (f === 0) {
-        cell.classList.add("open");
-      } else if ([3,5,7,9,15,17,19,21].includes(f)) {
-        cell.classList.add("inlay");
-      } else if ([12,24].includes(f)) {
-        cell.classList.add("double-inlay");
-      }
-
-      const stringLine = document.createElement("span");
-      stringLine.className = "string-line";
-      cell.appendChild(stringLine);
-
-      const note = document.createElement("span");
-      note.className = "note";
-      note.textContent = "";
-      cell.appendChild(note);
-
-      cell.addEventListener("click", () => handleCell(cell));
-      board.appendChild(cell);
+      if (f === 0) cell.classList.add("nut");
+      if ([3, 5, 7, 9, 15, 17, 19, 21].includes(f)) cell.classList.add("inlay");
+      if ([12, 24].includes(f)) cell.classList.add("double-inlay");
+      cell.dataset.string = s;
+      cell.dataset.fret = f;
+      cell.setAttribute("aria-label", `${str.name} ${f}フレット`);
+      cell.innerHTML = '<span class="note"></span>';
+      cell.addEventListener("click", () => onCellClick(s, f));
+      fretboard.appendChild(cell);
+      cellButtons.set(cellKey(s, f), cell);
     }
   });
+
+  refreshBoard();
 }
 
 function refreshBoard() {
-  document.querySelectorAll(".cell").forEach(cell => {
-    const s = Number(cell.dataset.s);
-    const f = Number(cell.dataset.f);
-    const key = cell.dataset.key;
-    const note = cell.querySelector(".note");
+  const scaleMode = mode === "scaleFind" || mode === "scaleIdentify";
+  const notes = scaleMode && question.root ? currentScaleNotes() : [];
+  const root = question.root;
 
-    cell.classList.remove("selected", "correct", "wrong", "target");
+  cellButtons.forEach((cell, key) => {
+    const [s, f] = key.split("-").map(Number);
+    const note = noteAt(s, f);
+    const isTarget = mode === "position" && question.s === s && question.f === f;
+    const isScaleNote = scaleMode && notes.includes(note);
+    const isRoot = scaleMode && note === root;
 
-    // 通常は音名を隠す。答え表示後のみ表示する。
-    note.textContent = answered ? noteAt(s, f) : "";
+    cell.classList.remove("target", "scale-tone", "root-tone", "selected", "correct", "wrong");
 
-    if (selected.has(key)) cell.classList.add("selected");
+    if (isTarget) cell.classList.add("target");
+    if (isScaleNote) cell.classList.add("scale-tone");
+    if (isRoot) cell.classList.add("root-tone");
+    if (selectedCells.has(key)) cell.classList.add("selected");
+    if (correctCells.has(key)) cell.classList.add("correct");
 
-    if (target && target.s === s && target.f === f) {
-      cell.classList.add("target");
+    const noteSpan = cell.querySelector(".note");
+    // 通常は音名を隠し、答えを表示したときだけ表示する
+    if (answered && (mode === "position" || mode === "scaleIdentify")) {
+      noteSpan.textContent = note;
+    } else if (answered && (mode === "find" || mode === "scaleFind")) {
+      noteSpan.textContent = note;
+    } else {
+      noteSpan.textContent = "";
+    }
+
+    // ④では問題としてスケール全体の構成音を表示する
+    if (mode === "scaleIdentify" && isScaleNote) {
+      noteSpan.textContent = note;
     }
   });
 }
 
-function handleCell(cell) {
-  if (answered || cell.disabled) return;
+function setQuestion(text) {
+  questionEl.textContent = text;
+  messageEl.textContent = "";
+  answersEl.innerHTML = "";
+  answered = false;
+  selectedCells = new Set();
+  correctCells = new Set();
+  refreshBoard();
+}
 
-  const s = Number(cell.dataset.s);
-  const f = Number(cell.dataset.f);
-  const key = cell.dataset.key;
+function addAnswerButton(text, onClick) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "answer-btn";
+  btn.textContent = text;
+  btn.addEventListener("click", onClick);
+  answersEl.appendChild(btn);
+  return btn;
+}
 
-  if (mode === "position" || mode === "scaleNote") {
-    status.textContent = `出題位置：${s + 1}弦 ${f}フレット`;
-    return;
+function setupExtraControls() {
+  extraControls.innerHTML = "";
+  rootSelect = null;
+  scaleSelect = null;
+
+  if (mode === "scaleFind" || mode === "scaleIdentify") {
+    const rootLabel = document.createElement("label");
+    rootLabel.textContent = "ルート音";
+    rootSelect = document.createElement("select");
+    NOTE_NAMES.forEach(note => {
+      const opt = document.createElement("option");
+      opt.value = note;
+      opt.textContent = note;
+      rootSelect.appendChild(opt);
+    });
+    rootSelect.value = question.root || "C";
+    rootSelect.addEventListener("change", () => {
+      question.root = rootSelect.value;
+      refreshBoard();
+      if (mode === "scaleFind") newQuestion();
+      if (mode === "scaleIdentify") newQuestion();
+    });
+    extraControls.append(rootLabel, rootSelect);
   }
 
-  if (selected.has(key)) selected.delete(key);
-  else selected.add(key);
-
-  refreshBoard();
-  status.textContent = `選択中：${selected.size}か所`;
-}
-
-function addNoteChoices() {
-  const choices = $("choices");
-  choices.innerHTML = "";
-
-  NOTES.forEach(note => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = note;
-
-    button.addEventListener("click", () => {
-      if (answered) return;
-
-      const correct = note === noteAt(target.s, target.f);
-      answered = true;
-      refreshBoard();
-
-      status.style.color = correct ? "#72dfa0" : "#ffb1a8";
-      status.textContent = correct
-        ? "正解！"
-        : `不正解。正解は ${noteAt(target.s, target.f)} です。`;
+  if (mode === "scaleFind") {
+    const scaleLabel = document.createElement("label");
+    scaleLabel.textContent = "スケール";
+    scaleSelect = document.createElement("select");
+    Object.keys(SCALES).forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      scaleSelect.appendChild(opt);
     });
-
-    choices.appendChild(button);
-  });
-}
-
-function updateModeUI() {
-  document.querySelectorAll("[data-mode]").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.mode === mode);
-  });
-
-  $("noteField").hidden = mode !== "find";
-  $("rootField").hidden = !["scaleFind", "scaleNote"].includes(mode);
-  $("scaleField").hidden = !["scaleFind", "scaleNote"].includes(mode);
-
-  $("checkBtn").hidden = !["find", "scaleFind"].includes(mode);
-  $("choices").hidden = !["position", "scaleNote"].includes(mode);
-
-  newQuestion();
+    scaleSelect.value = question.scaleName || "メジャー";
+    scaleSelect.addEventListener("change", () => {
+      question.scaleName = scaleSelect.value;
+      newQuestion();
+    });
+    extraControls.append(scaleLabel, scaleSelect);
+  }
 }
 
 function newQuestion() {
-  selected.clear();
   answered = false;
-  status.textContent = "";
-  status.style.color = "#f1f1f1";
-
-  // 入力値を反映してから盤面を作り直す
-  buildBoard();
-
-  const positions = allPositions();
-  const randomPosition = () =>
-    positions[Math.floor(Math.random() * positions.length)];
+  selectedCells = new Set();
+  correctCells = new Set();
+  answersEl.innerHTML = "";
+  messageEl.textContent = "";
+  setupExtraControls();
 
   if (mode === "position") {
-    target = randomPosition();
-    $("question").textContent = "この位置は何の音？";
-    $("instructions").textContent =
-      `${target.s + 1}弦 ${target.f}フレットの音名を選んでください。赤いマーカーが出題位置です。`;
-    addNoteChoices();
-
-  } else if (mode === "find") {
-    target = null;
-    $("question").textContent = `${$("targetNote").value} はどこにある？`;
-    $("instructions").textContent =
-      `0〜${limitFret()}フレットから、該当する位置をすべて選んでください。音名は隠されています。`;
-    $("choices").innerHTML = "";
-
-  } else if (mode === "scaleFind") {
-    target = null;
-    const scale = SCALES[$("scaleType").value];
-    $("question").textContent =
-      `${$("rootNote").value} ${scale.name} の音はどこ？`;
-    $("instructions").textContent =
-      `0〜${limitFret()}フレットから、スケールに含まれる音をすべて選んでください。音名は隠されています。`;
-    $("choices").innerHTML = "";
-
-  } else {
-    const pcs = scalePitchClasses();
-    const candidates = positions.filter(p => pcs.has(pitchClass(p.s, p.f)));
-    target = candidates[Math.floor(Math.random() * candidates.length)];
-
-    $("question").textContent = "このスケール内の音は何？";
-    $("instructions").textContent =
-      `${$("rootNote").value} ${SCALES[$("scaleType").value].name} の構成音です。赤いマーカーの音名を選んでください。`;
-    addNoteChoices();
+    question.s = randomInt(6);
+    question.f = randomInt(maxFret + 1);
+    setQuestion("この赤い位置の音名は？");
+    ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"].forEach(note => {
+      addAnswerButton(note, () => {
+        const correct = note === noteAt(question.s, question.f);
+        answered = true;
+        refreshBoard();
+        messageEl.textContent = correct
+          ? "正解です。"
+          : `不正解。正解は ${noteAt(question.s, question.f)} です。`;
+        markAnswerButtons(note, noteAt(question.s, question.f));
+      });
+    });
   }
 
-  answerSet = expectedPositions();
+  if (mode === "find") {
+    question.note = randomNote();
+    setQuestion(`指板上で「${question.note}」の位置をすべて選んでください。`);
+    messageEl.textContent = "該当する位置をタップしてから「答え合わせ」を押してください。";
+    addAnswerButton("答え合わせ", checkFindAnswer);
+  }
+
+  if (mode === "scaleFind") {
+    question.root = rootSelect ? rootSelect.value : (question.root || "C");
+    question.scaleName = scaleSelect ? scaleSelect.value : (question.scaleName || "メジャー");
+    if (rootSelect) rootSelect.value = question.root;
+    if (scaleSelect) scaleSelect.value = question.scaleName;
+    setQuestion(`${question.root} ${question.scaleName} の構成音をすべて選んでください。`);
+    messageEl.textContent = "緑色の表示は使わず、音の配置を自分で考えて選択します。";
+    addAnswerButton("答え合わせ", checkScaleFindAnswer);
+    refreshBoard();
+  }
+
+  if (mode === "scaleIdentify") {
+    question.root = question.root || randomNote();
+    question.scaleName = Object.keys(SCALES)[randomInt(Object.keys(SCALES).length)];
+    if (rootSelect) rootSelect.value = question.root;
+    setQuestion(`この指板上の音の並びは、${question.root} をルートとする何のスケール？`);
+    messageEl.textContent = "表示されている構成音の並びからスケールを判別してください。";
+    Object.keys(SCALES).forEach(name => {
+      addAnswerButton(name, () => {
+        const correct = name === question.scaleName;
+        answered = true;
+        refreshBoard();
+        messageEl.textContent = correct
+          ? `正解です。${question.root} ${question.scaleName} です。`
+          : `不正解。正解は ${question.root} ${question.scaleName} です。`;
+        [...answersEl.querySelectorAll("button")].forEach(btn => {
+          btn.disabled = true;
+          if (btn.textContent === question.scaleName) btn.classList.add("correct");
+          else if (btn.textContent === name) btn.classList.add("wrong");
+        });
+      });
+    });
+    refreshBoard();
+  }
+}
+
+function markAnswerButtons(chosen, correct) {
+  [...answersEl.querySelectorAll("button")].forEach(btn => {
+    if (btn.textContent === correct) btn.classList.add("correct");
+    else if (btn.textContent === chosen) btn.classList.add("wrong");
+    btn.disabled = true;
+  });
+}
+
+function onCellClick(s, f) {
+  const key = cellKey(s, f);
+
+  if (mode === "position" || mode === "scaleIdentify") return;
+  if (answered) return;
+
+  if (selectedCells.has(key)) selectedCells.delete(key);
+  else selectedCells.add(key);
+
   refreshBoard();
 }
 
-function checkAnswer() {
-  if (answered || !["find", "scaleFind"].includes(mode)) return;
+function checkFindAnswer() {
+  const correct = new Set();
+  allCells().forEach(({s, f, note}) => {
+    if (note === question.note) correct.add(cellKey(s, f));
+  });
+  checkSelected(correct);
+}
 
-  const missing = [...answerSet].filter(key => !selected.has(key));
-  const extra = [...selected].filter(key => !answerSet.has(key));
+function checkScaleFindAnswer() {
+  const correct = new Set();
+  const notes = currentScaleNotes();
+  allCells().forEach(({s, f, note}) => {
+    if (notes.includes(note)) correct.add(cellKey(s, f));
+  });
+  checkSelected(correct);
+}
 
-  document.querySelectorAll(".cell").forEach(cell => {
-    cell.classList.remove("correct", "wrong");
+function checkSelected(correct) {
+  answered = true;
+  correctCells = correct;
+  refreshBoard();
+
+  let allCorrect = selectedCells.size === correct.size;
+  selectedCells.forEach(key => {
+    if (!correct.has(key)) allCorrect = false;
   });
 
-  if (missing.length === 0 && extra.length === 0) {
-    answered = true;
-    status.style.color = "#72dfa0";
-    status.textContent = `正解！ ${answerSet.size}か所すべて見つかりました。`;
-    refreshBoard();
-    return;
-  }
-
-  status.style.color = "#ffb1a8";
-  status.textContent =
-    `まだ違います。見落とし ${missing.length}か所、余分な選択 ${extra.length}か所です。`;
-
-  missing.forEach(key => {
-    const cell = board.querySelector(`[data-key="${key}"]`);
+  messageEl.textContent = allCorrect
+    ? "正解です。すべての位置を選べています。"
+    : `まだ違いがあります。正しい位置は ${correct.size} か所です。`;
+  correct.forEach(key => {
+    const cell = cellButtons.get(key);
     if (cell) cell.classList.add("correct");
   });
-
-  extra.forEach(key => {
-    const cell = board.querySelector(`[data-key="${key}"]`);
-    if (cell) cell.classList.add("wrong");
+  selectedCells.forEach(key => {
+    if (!correct.has(key)) {
+      const cell = cellButtons.get(key);
+      if (cell) cell.classList.add("wrong");
+    }
   });
 }
 
 function showAnswer() {
-  answered = true;
-
-  if (mode === "position" || mode === "scaleNote") {
+  if (mode === "position") {
+    answered = true;
     refreshBoard();
-    status.style.color = "#72dfa0";
-    status.textContent = `正解は ${noteAt(target.s, target.f)} です。`;
-    return;
+    messageEl.textContent = `正解は ${noteAt(question.s, question.f)} です。`;
+  } else if (mode === "find") {
+    const correct = new Set();
+    allCells().forEach(({s, f, note}) => {
+      if (note === question.note) correct.add(cellKey(s, f));
+    });
+    answered = true;
+    correctCells = correct;
+    refreshBoard();
+    messageEl.textContent = `「${question.note}」は ${correct.size} か所あります。`;
+  } else if (mode === "scaleFind") {
+    const correct = new Set();
+    const notes = currentScaleNotes();
+    allCells().forEach(({s, f, note}) => {
+      if (notes.includes(note)) correct.add(cellKey(s, f));
+    });
+    answered = true;
+    correctCells = correct;
+    refreshBoard();
+    messageEl.textContent = `${question.root} ${question.scaleName} の構成音は ${notes.join("・")} です。`;
+  } else if (mode === "scaleIdentify") {
+    answered = true;
+    refreshBoard();
+    messageEl.textContent = `正解は ${question.root} ${question.scaleName} です。構成音：${currentScaleNotes().join("・")}`;
   }
-
-  selected.clear();
-  refreshBoard();
-
-  document.querySelectorAll(".cell").forEach(cell => {
-    if (answerSet.has(cell.dataset.key)) {
-      cell.classList.add("correct");
-    }
-  });
-
-  status.style.color = "#72dfa0";
-  status.textContent =
-    `正解は ${answerSet.size}か所です。緑色の位置と表示された音名を確認してください。`;
 }
 
-document.querySelectorAll("[data-mode]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    mode = btn.dataset.mode;
-    updateModeUI();
+function changeMode(newMode) {
+  mode = newMode;
+  document.querySelectorAll(".mode-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.mode === mode);
   });
+
+  // モードごとに問題設定を初期化
+  question = {};
+  if (mode === "scaleFind" || mode === "scaleIdentify") {
+    question.root = randomNote();
+    question.scaleName = "メジャー";
+  }
+
+  legendEl.classList.toggle("hidden", mode === "find");
+  newQuestion();
+}
+
+document.querySelectorAll(".mode-btn").forEach(btn => {
+  btn.addEventListener("click", () => changeMode(btn.dataset.mode));
+});
+newQuestionBtn.addEventListener("click", newQuestion);
+showAnswerBtn.addEventListener("click", showAnswer);
+maxFretInput.addEventListener("change", () => {
+  buildBoard();
+  newQuestion();
+});
+maxFretInput.addEventListener("input", () => {
+  const val = Number(maxFretInput.value);
+  if (maxFretInput.value !== "" && val >= 0 && val <= 24) {
+    buildBoard();
+    newQuestion();
+  }
 });
 
-$("checkBtn").addEventListener("click", checkAnswer);
-$("newBtn").addEventListener("click", newQuestion);
-$("showBtn").addEventListener("click", showAnswer);
-
-[
-  $("targetNote"),
-  $("rootNote"),
-  $("scaleType"),
-  $("maxFret")
-].forEach(el => {
-  el.addEventListener("change", newQuestion);
-});
-
-updateModeUI();
+buildBoard();
+newQuestion();
 </script>
 </body>
 </html>
