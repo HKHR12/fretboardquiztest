@@ -7,79 +7,271 @@
 <title>ギター指板トレーナー</title>
 <style>
 * { box-sizing: border-box; }
+
 body {
-  margin: 0; padding: 16px;
-  background: #17191e; color: #f1f1f1;
+  margin: 0;
+  padding: 16px;
+  background: #17191e;
+  color: #f1f1f1;
   font-family: system-ui, sans-serif;
 }
-main { max-width: 1150px; margin: auto; }
+
+main { max-width: 1200px; margin: auto; }
 h1 { font-size: 24px; }
+
 button, select, input {
-  font: inherit; padding: 9px 11px;
-  border-radius: 8px; border: 1px solid #555;
+  font: inherit;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid #555;
 }
-button { cursor: pointer; background: #343944; color: white; }
-button.active { background: #a72e3a; border-color: #e45b5b; }
-button:disabled { opacity: .4; cursor: default; }
-.modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+
+button {
+  cursor: pointer;
+  background: #343944;
+  color: white;
+}
+
+button.active {
+  background: #a72e3a;
+  border-color: #e45b5b;
+}
+
+button:disabled { cursor: default; }
+
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
 .settings {
-  display: flex; flex-wrap: wrap; align-items: end;
-  gap: 12px; padding: 14px; margin: 14px 0;
-  background: #22252c; border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 14px;
+  margin: 14px 0;
+  background: #22252c;
+  border-radius: 12px;
 }
-.field { display: flex; flex-direction: column; gap: 5px; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 label { font-size: 13px; color: #c3c6ce; }
-input, select { background: #121419; color: white; max-width: 100%; }
-#question { font-size: 20px; font-weight: 700; margin: 20px 0 8px; }
-#instructions { color: #c3c6ce; line-height: 1.6; }
-#boardWrap { overflow-x: auto; margin: 16px 0; }
-#board, #fretHeader {
+input, select { background: #121419; color: white; }
+
+#question {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 20px 0 8px;
+}
+
+#instructions {
+  color: #c3c6ce;
+  line-height: 1.6;
+}
+
+#boardWrap {
+  overflow-x: auto;
+  margin: 18px 0;
+  padding-bottom: 8px;
+}
+
+#fretHeader, #board {
   display: grid;
-  grid-template-columns: 54px repeat(25, 42px);
   width: max-content;
 }
-#board {
-  grid-template-rows: repeat(6, 48px);
-  background: #d7b17c;
-  border: 3px solid #8e6843;
-  border-radius: 5px;
-}
+
 #fretHeader {
-  color: #d2d5dd; font-size: 12px;
-  text-align: center; margin-bottom: 3px;
+  color: #d2d5dd;
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 4px;
 }
-#fretHeader span { padding: 4px 0; }
+
+#fretHeader span {
+  padding: 4px 0;
+}
+
+#board {
+  grid-template-rows: repeat(6, 54px);
+  background: #c49a67;
+  border: 3px solid #795535;
+  border-radius: 5px;
+  position: relative;
+}
+
 .stringLabel {
-  display: flex; align-items: center; justify-content: center;
-  color: white; background: #252932; font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: #252932;
+  font-size: 12px;
+  border-bottom: 1px solid #555;
 }
+
 .cell {
-  display: flex; align-items: center; justify-content: center;
-  padding: 0; min-width: 0; border-radius: 0;
-  background: transparent; color: #171717;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0;
   border-right: 1px solid #795c3c;
   border-bottom: 1px solid #795c3c;
+  background: transparent;
+  color: #171717;
+  overflow: visible;
 }
-.cell.open { border-right: 4px solid #f0d9ad; }
-.cell:disabled { opacity: 1; }
-.cell.selected { background: #397cbd; color: white; }
-.cell.correct { background: #398c60; color: white; }
-.cell.wrong { background: #b83232; color: white; }
+
+/* 開放弦とナット */
+.cell.open {
+  border-right: 5px solid #e4d4b6;
+}
+
+/* 指板のインレイ */
+.cell.inlay::before,
+.cell.double-inlay::before,
+.cell.double-inlay::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #f0dfc3;
+  border: 1px solid #a78b66;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cell.double-inlay::before {
+  top: 27%;
+}
+
+.cell.double-inlay::after {
+  top: 73%;
+}
+
+/* 弦のライン */
+.cell .string-line {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(75, 58, 38, .8);
+  pointer-events: none;
+}
+
+/* 音名 */
 .cell .note {
-  display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 50%;
-  font-size: 12px; font-weight: 700;
+  display: none;
+  position: relative;
+  z-index: 3;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  background: #e8d7b9;
+  color: #24201b;
 }
-.cell.selected .note, .cell.correct .note, .cell.wrong .note {
-  background: rgba(0,0,0,.18);
+
+/* 出題位置の赤いマーカー */
+.cell.target {
+  background: rgba(190, 37, 47, .20);
 }
-.actions { display: flex; gap: 9px; flex-wrap: wrap; margin: 14px 0; }
-#status { min-height: 28px; margin: 12px 0; font-weight: 700; }
-#choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+
+.cell.target .note {
+  display: flex;
+  width: 35px;
+  height: 35px;
+  background: #e53945;
+  color: white;
+  border: 3px solid white;
+  box-shadow: 0 0 0 3px #a71824, 0 0 14px rgba(255, 45, 60, .9);
+  animation: pulse 1.3s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #a71824, 0 0 10px rgba(255,45,60,.6); }
+  50% { box-shadow: 0 0 0 5px #a71824, 0 0 17px rgba(255,45,60,1); }
+}
+
+/* 選択式の回答 */
+.cell.selected {
+  background: #397cbd;
+}
+
+.cell.selected .note {
+  display: flex;
+  background: #15548e;
+  color: white;
+}
+
+/* 正解表示 */
+.cell.correct {
+  background: #398c60;
+}
+
+.cell.correct .note {
+  display: flex;
+  background: #246e48;
+  color: white;
+}
+
+/* 誤答表示 */
+.cell.wrong {
+  background: #b83232;
+}
+
+.cell.wrong .note {
+  display: flex;
+  background: #8d2020;
+  color: white;
+}
+
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+
+#choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
 #choices button { min-width: 48px; }
-.hint { color: #aeb3bd; font-size: 13px; line-height: 1.6; }
+#status { min-height: 28px; margin: 12px 0; font-weight: 700; }
+
+.hint {
+  color: #aeb3bd;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 [hidden] { display: none !important; }
-@media(max-width: 600px) {
+
+@media (max-width: 600px) {
   body { padding: 10px; }
   h1 { font-size: 21px; }
   .modes button { flex: 1 1 45%; }
@@ -87,6 +279,7 @@ input, select { background: #121419; color: white; max-width: 100%; }
 }
 </style>
 </head>
+
 <body>
 <main>
 <h1>ギター指板トレーナー</h1>
@@ -100,7 +293,7 @@ input, select { background: #121419; color: white; max-width: 100%; }
 
 <div class="settings">
   <div class="field">
-    <label for="maxFret">出題する最高フレット</label>
+    <label for="maxFret">最高フレット</label>
     <input id="maxFret" type="number" min="0" max="24" value="5">
   </div>
 
@@ -139,8 +332,9 @@ input, select { background: #121419; color: white; max-width: 100%; }
 </div>
 
 <div id="status" aria-live="polite"></div>
+
 <p class="hint">
-  指板はTAB譜と同じく上から1弦、2弦……6弦です。フレット範囲は0〜指定した最高フレットです。指板は横にスクロールできます。
+  上から1弦、2弦……6弦の順です。最高フレットを変更すると、指板と番号表示の両方が連動します。赤いマーカーが出題位置、インレイがポジションの目印です。
 </p>
 </main>
 
@@ -163,12 +357,10 @@ const SCALES = {
 };
 
 const $ = id => document.getElementById(id);
+
 const board = $("board");
 const header = $("fretHeader");
 const status = $("status");
-const question = $("question");
-const instructions = $("instructions");
-const maxFretInput = $("maxFret");
 
 let mode = "position";
 let selected = new Set();
@@ -184,13 +376,15 @@ function fillNotes(select) {
     select.appendChild(option);
   });
 }
+
 fillNotes($("targetNote"));
 fillNotes($("rootNote"));
+
 $("targetNote").value = "E";
 $("rootNote").value = "C";
 
 function limitFret() {
-  const n = Number.parseInt(maxFretInput.value, 10);
+  const n = Number.parseInt($("maxFret").value, 10);
   return Number.isFinite(n) ? Math.max(0, Math.min(24, n)) : 5;
 }
 
@@ -218,7 +412,9 @@ function allPositions() {
 
 function scalePitchClasses() {
   const root = NOTES.indexOf($("rootNote").value);
-  return new Set(SCALES[$("scaleType").value].intervals.map(i => (root + i) % 12));
+  return new Set(
+    SCALES[$("scaleType").value].intervals.map(i => (root + i) % 12)
+  );
 }
 
 function expectedPositions() {
@@ -226,27 +422,36 @@ function expectedPositions() {
 
   if (mode === "find") {
     const pc = NOTES.indexOf($("targetNote").value);
-    return new Set(positions.filter(p => pitchClass(p.s, p.f) === pc).map(p => p.key));
+    return new Set(
+      positions.filter(p => pitchClass(p.s, p.f) === pc).map(p => p.key)
+    );
   }
 
   if (mode === "scaleFind") {
     const pcs = scalePitchClasses();
-    return new Set(positions.filter(p => pcs.has(pitchClass(p.s, p.f))).map(p => p.key));
-  }
-
-  if (mode === "scaleNote") {
-    const pcs = scalePitchClasses();
-    return new Set(positions.filter(p => pcs.has(pitchClass(p.s, p.f))).map(p => p.key));
+    return new Set(
+      positions.filter(p => pcs.has(pitchClass(p.s, p.f))).map(p => p.key)
+    );
   }
 
   return new Set();
 }
 
+/* フレット数に合わせて指板と番号を再生成 */
 function buildBoard() {
-  board.innerHTML = "";
-  header.innerHTML = "<span></span>";
+  const max = limitFret();
+  const columns = `54px repeat(${max + 1}, 42px)`;
 
-  for (let f = 0; f <= 24; f++) {
+  board.innerHTML = "";
+  header.innerHTML = "";
+
+  board.style.gridTemplateColumns = columns;
+  header.style.gridTemplateColumns = columns;
+
+  const blank = document.createElement("span");
+  header.appendChild(blank);
+
+  for (let f = 0; f <= max; f++) {
     const span = document.createElement("span");
     span.textContent = f;
     header.appendChild(span);
@@ -258,16 +463,29 @@ function buildBoard() {
     label.textContent = string.name;
     board.appendChild(label);
 
-    for (let f = 0; f <= 24; f++) {
+    for (let f = 0; f <= max; f++) {
       const cell = document.createElement("button");
       cell.type = "button";
-      cell.className = "cell" + (f === 0 ? " open" : "");
+      cell.className = "cell";
       cell.dataset.key = keyOf(s, f);
       cell.dataset.s = s;
       cell.dataset.f = f;
 
+      if (f === 0) {
+        cell.classList.add("open");
+      } else if ([3,5,7,9,15,17,19,21].includes(f)) {
+        cell.classList.add("inlay");
+      } else if ([12,24].includes(f)) {
+        cell.classList.add("double-inlay");
+      }
+
+      const stringLine = document.createElement("span");
+      stringLine.className = "string-line";
+      cell.appendChild(stringLine);
+
       const note = document.createElement("span");
       note.className = "note";
+      note.textContent = "";
       cell.appendChild(note);
 
       cell.addEventListener("click", () => handleCell(cell));
@@ -283,16 +501,16 @@ function refreshBoard() {
     const key = cell.dataset.key;
     const note = cell.querySelector(".note");
 
-    cell.classList.remove("selected", "correct", "wrong");
-    cell.style.visibility = f <= limitFret() ? "visible" : "hidden";
-    cell.disabled = f > limitFret();
+    cell.classList.remove("selected", "correct", "wrong", "target");
 
-    // 位置当てモードでは隠す。選択式では、答えのヒントを出さないため隠す。
-    // 答えを表示した後は、答え合わせの色と音名を見られる。
-    const reveal = answered;
-    note.textContent = reveal ? noteAt(s, f) : "";
+    // 通常は音名を隠す。答え表示後のみ表示する。
+    note.textContent = answered ? noteAt(s, f) : "";
 
     if (selected.has(key)) cell.classList.add("selected");
+
+    if (target && target.s === s && target.f === f) {
+      cell.classList.add("target");
+    }
   });
 }
 
@@ -304,14 +522,7 @@ function handleCell(cell) {
   const key = cell.dataset.key;
 
   if (mode === "position" || mode === "scaleNote") {
-    const correct = mode === "position"
-      ? noteAt(s, f) === target.note
-      : scalePitchClasses().has(pitchClass(s, f)) &&
-        noteAt(s, f) === target.note;
-
-    // 音名当てではクリックした位置の音名を選択肢で回答するため、
-    // 指板自体をクリックしても回答にはしない。
-    status.textContent = `選択した位置：${s + 1}弦 ${f}フレット`;
+    status.textContent = `出題位置：${s + 1}弦 ${f}フレット`;
     return;
   }
 
@@ -322,12 +533,38 @@ function handleCell(cell) {
   status.textContent = `選択中：${selected.size}か所`;
 }
 
+function addNoteChoices() {
+  const choices = $("choices");
+  choices.innerHTML = "";
+
+  NOTES.forEach(note => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = note;
+
+    button.addEventListener("click", () => {
+      if (answered) return;
+
+      const correct = note === noteAt(target.s, target.f);
+      answered = true;
+      refreshBoard();
+
+      status.style.color = correct ? "#72dfa0" : "#ffb1a8";
+      status.textContent = correct
+        ? "正解！"
+        : `不正解。正解は ${noteAt(target.s, target.f)} です。`;
+    });
+
+    choices.appendChild(button);
+  });
+}
+
 function updateModeUI() {
   document.querySelectorAll("[data-mode]").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
 
-  $("noteField").hidden = !["find"].includes(mode);
+  $("noteField").hidden = mode !== "find";
   $("rootField").hidden = !["scaleFind", "scaleNote"].includes(mode);
   $("scaleField").hidden = !["scaleFind", "scaleNote"].includes(mode);
 
@@ -342,61 +579,50 @@ function newQuestion() {
   answered = false;
   status.textContent = "";
   status.style.color = "#f1f1f1";
-  $("choices").innerHTML = "";
+
+  // 入力値を反映してから盤面を作り直す
+  buildBoard();
 
   const positions = allPositions();
-  const randomPosition = () => positions[Math.floor(Math.random() * positions.length)];
+  const randomPosition = () =>
+    positions[Math.floor(Math.random() * positions.length)];
 
   if (mode === "position") {
     target = randomPosition();
-    question.textContent = "この位置は何の音？";
-    instructions.textContent = `${target.s + 1}弦 ${target.f}フレットの音名を選んでください。指板上の音名は表示されません。`;
-    addNoteChoices(NOTES);
+    $("question").textContent = "この位置は何の音？";
+    $("instructions").textContent =
+      `${target.s + 1}弦 ${target.f}フレットの音名を選んでください。赤いマーカーが出題位置です。`;
+    addNoteChoices();
+
   } else if (mode === "find") {
-    question.textContent = `${$("targetNote").value} はどこにある？`;
-    instructions.textContent = `0〜${limitFret()}フレットから、該当する位置をすべて選んでください。`;
+    target = null;
+    $("question").textContent = `${$("targetNote").value} はどこにある？`;
+    $("instructions").textContent =
+      `0〜${limitFret()}フレットから、該当する位置をすべて選んでください。音名は隠されています。`;
+    $("choices").innerHTML = "";
+
   } else if (mode === "scaleFind") {
+    target = null;
     const scale = SCALES[$("scaleType").value];
-    question.textContent = `${$("rootNote").value} ${scale.name} の音はどこ？`;
-    instructions.textContent = `0〜${limitFret()}フレットから、スケールに含まれる音をすべて選んでください。音名は隠されています。`;
+    $("question").textContent =
+      `${$("rootNote").value} ${scale.name} の音はどこ？`;
+    $("instructions").textContent =
+      `0〜${limitFret()}フレットから、スケールに含まれる音をすべて選んでください。音名は隠されています。`;
+    $("choices").innerHTML = "";
+
   } else {
     const pcs = scalePitchClasses();
     const candidates = positions.filter(p => pcs.has(pitchClass(p.s, p.f)));
     target = candidates[Math.floor(Math.random() * candidates.length)];
-    question.textContent = "この位置の音名は？（スケール練習）";
-    instructions.textContent = `${$("rootNote").value} ${SCALES[$("scaleType").value].name} のスケール内の音です。${target.s + 1}弦 ${target.f}フレットの音名を選んでください。`;
-    addNoteChoices(NOTES);
+
+    $("question").textContent = "このスケール内の音は何？";
+    $("instructions").textContent =
+      `${$("rootNote").value} ${SCALES[$("scaleType").value].name} の構成音です。赤いマーカーの音名を選んでください。`;
+    addNoteChoices();
   }
 
   answerSet = expectedPositions();
   refreshBoard();
-}
-
-function addNoteChoices(notes) {
-  const choices = $("choices");
-  notes.forEach(note => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = note;
-    button.addEventListener("click", () => {
-      if (answered) return;
-
-      let correct;
-      if (mode === "position") {
-        correct = note === noteAt(target.s, target.f);
-      } else {
-        correct = note === noteAt(target.s, target.f);
-      }
-
-      answered = true;
-      refreshBoard();
-      status.style.color = correct ? "#72dfa0" : "#ffb1a8";
-      status.textContent = correct
-        ? "正解！"
-        : `不正解。正解は ${noteAt(target.s, target.f)} です。`;
-    });
-    choices.appendChild(button);
-  });
 }
 
 function checkAnswer() {
@@ -404,6 +630,10 @@ function checkAnswer() {
 
   const missing = [...answerSet].filter(key => !selected.has(key));
   const extra = [...selected].filter(key => !answerSet.has(key));
+
+  document.querySelectorAll(".cell").forEach(cell => {
+    cell.classList.remove("correct", "wrong");
+  });
 
   if (missing.length === 0 && extra.length === 0) {
     answered = true;
@@ -414,16 +644,23 @@ function checkAnswer() {
   }
 
   status.style.color = "#ffb1a8";
-  status.textContent = `まだ違います。見落とし ${missing.length}か所、余分な選択 ${extra.length}か所です。`;
-  document.querySelectorAll(".cell").forEach(cell => {
-    const key = cell.dataset.key;
-    if (missing.includes(key)) cell.classList.add("correct");
-    if (extra.includes(key)) cell.classList.add("wrong");
+  status.textContent =
+    `まだ違います。見落とし ${missing.length}か所、余分な選択 ${extra.length}か所です。`;
+
+  missing.forEach(key => {
+    const cell = board.querySelector(`[data-key="${key}"]`);
+    if (cell) cell.classList.add("correct");
+  });
+
+  extra.forEach(key => {
+    const cell = board.querySelector(`[data-key="${key}"]`);
+    if (cell) cell.classList.add("wrong");
   });
 }
 
 function showAnswer() {
   answered = true;
+
   if (mode === "position" || mode === "scaleNote") {
     refreshBoard();
     status.style.color = "#72dfa0";
@@ -431,17 +668,18 @@ function showAnswer() {
     return;
   }
 
-  document.querySelectorAll(".cell").forEach(cell => {
-    cell.classList.remove("selected", "correct", "wrong");
-    if (answerSet.has(cell.dataset.key)) cell.classList.add("correct");
-  });
+  selected.clear();
   refreshBoard();
+
   document.querySelectorAll(".cell").forEach(cell => {
-    if (answerSet.has(cell.dataset.key)) cell.classList.add("correct");
+    if (answerSet.has(cell.dataset.key)) {
+      cell.classList.add("correct");
+    }
   });
 
   status.style.color = "#72dfa0";
-  status.textContent = `正解は ${answerSet.size}か所です。緑色の位置を確認してください。`;
+  status.textContent =
+    `正解は ${answerSet.size}か所です。緑色の位置と表示された音名を確認してください。`;
 }
 
 document.querySelectorAll("[data-mode]").forEach(btn => {
@@ -455,11 +693,15 @@ $("checkBtn").addEventListener("click", checkAnswer);
 $("newBtn").addEventListener("click", newQuestion);
 $("showBtn").addEventListener("click", showAnswer);
 
-[$("targetNote"), $("rootNote"), $("scaleType"), maxFretInput].forEach(el => {
+[
+  $("targetNote"),
+  $("rootNote"),
+  $("scaleType"),
+  $("maxFret")
+].forEach(el => {
   el.addEventListener("change", newQuestion);
 });
 
-buildBoard();
 updateModeUI();
 </script>
 </body>
